@@ -161,4 +161,4 @@ This project is a standalone desktop application and exposes no network services
 
 Touchless Mouse began as a simple "control your PC with your hand" experiment and quickly exposed the real engineering problem underneath: the first version technically worked, but it clicked by accident, shook constantly, and gave the user no confidence about what would happen next. This project is the rebuild — a deliberate study in turning a fun demo into a dependable input device through strict gesture vocabulary, temporal confirmation, scale-invariant pinch detection, and adaptive cursor smoothing. It was developed as an academic capstone-style project, with the Colab notebooks included so every stage of the pipeline can be inspected and reproduced without hardware.
 
-<p align="center"><i>Built with Python, MediaPipe, and a stubborn refusal to accept an unreliable demo. 👋</i></p>
+<p align="center"><i>Built with Python, and MediaPipe.</i></p>
