@@ -15,7 +15,7 @@ from mouse_control import MouseController
 
 CAMERA_INDEX = 0
 CAM_W, CAM_H = 640, 480
-MARGIN = 100  # active-area border in camera pixels
+MARGIN = 200  # active-area border in camera pixels
 
 GESTURE_COLORS = {
     Gesture.NONE: (150, 150, 150),
