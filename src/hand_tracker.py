@@ -1,33 +1,42 @@
+# %% [markdown]
+# ## 1. Hand Tracker
+# Wraps MediaPipe Hands. Returns all 21 landmarks in pixel coordinates
+# so the gesture recognizer can reason about the whole hand, not just two fingertips.
+
+# %%
 import cv2
 import mediapipe as mp
 
+
 class HandTracker:
-    def __init__(self):
+    def __init__(self, detection_conf=0.7, tracking_conf=0.6):
         self.mp_hands = mp.solutions.hands
-        # min_detection_confidence prevents the tracker from flickering
-        self.hands = self.mp_hands.Hands(max_num_hands=1, min_detection_confidence=0.7, min_tracking_confidence=0.7)
         self.mp_draw = mp.solutions.drawing_utils
+        self.hands = self.mp_hands.Hands(
+            static_image_mode=False,
+            max_num_hands=1,          # one hand only -> no confusion between hands
+            model_complexity=0,       # lighter model = higher FPS = smoother cursor
+            min_detection_confidence=detection_conf,
+            min_tracking_confidence=tracking_conf,
+        )
 
-    def process_frame(self, frame):
-        # MediaPipe requires RGB format, but OpenCV captures in BGR
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = self.hands.process(rgb_frame)
-        
-        landmarks_dict = {}
+    def process_frame(self, frame, draw=True):
+        """Returns (frame, landmarks). landmarks is a list of 21 (x, y) pixel
+        tuples, or None when no hand is visible."""
+        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # MediaPipe needs RGB
+        rgb.flags.writeable = False
+        results = self.hands.process(rgb)
 
-        if results.multi_hand_landmarks:
-            for hand_landmarks in results.multi_hand_landmarks:
-                # Draw the connections on the hand
-                self.mp_draw.draw_landmarks(frame, hand_landmarks, self.mp_hands.HAND_CONNECTIONS)
-                
-                # Extract coordinates for Index Finger Tip (8) and Thumb Tip (4)
-                for id, lm in enumerate(hand_landmarks.landmark):
-                    h, w, c = frame.shape
-                    cx, cy = int(lm.x * w), int(lm.y * h)
-                    
-                    if id == 8:
-                        landmarks_dict['index'] = (cx, cy)
-                    elif id == 4:
-                        landmarks_dict['thumb'] = (cx, cy)
-                        
-        return frame, landmarks_dict
+        if not results.multi_hand_landmarks:
+            return frame, None
+
+        hand = results.multi_hand_landmarks[0]
+        if draw:
+            self.mp_draw.draw_landmarks(frame, hand, self.mp_hands.HAND_CONNECTIONS)
+
+        h, w, _ = frame.shape
+        landmarks = [(int(lm.x * w), int(lm.y * h)) for lm in hand.landmark]
+        return frame, landmarks
+
+    def close(self):
+        self.hands.close()
